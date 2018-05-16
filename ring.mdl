@@ -1,0 +1,11 @@
+push
+move 250 250 0
+rotate x 90
+torus 0 0 0 250 200
+sphere 175 250 0 75
+sphere 0 250 -175 75
+sphere -175 250 0 75
+sphere 0 250 175 75
+sphere 0 250 0 10
+display
+save ball.png

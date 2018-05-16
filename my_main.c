@@ -104,4 +104,99 @@ void my_main() {
   g.green = 0;
   g.blue = 0;
 
+  for (i = 0; i < lastop; i ++) {
+    printf("%d: ", i);
+    switch(op[i].opcode) {
+
+    case PUSH:
+      printf("push");
+      push(systems);
+      break;
+
+    case POP:
+      printf("pop");
+      pop(systems);
+      break;
+
+    case MOVE:
+      printf("move: %.2f %.2f %.2f", op[i].op.move.d[0], op[i].op.move.d[1], op[i].op.move.d[2]);
+      tmp = make_translate(op[i].op.move.d[0], op[i].op.move.d[1], op[i].op.move.d[2]);
+      matrix_mult(peek(systems), tmp);
+      copy_matrix(tmp,  peek(systems));
+      tmp->lastcol = 0;
+      
+      break;
+
+    case SCALE:
+      printf("scale %.2f %.2f %.2f", op[i].op.scale.d[0], op[i].op.scale.d[1], op[i].op.scale.d[2]);
+      tmp = make_scale( op[i].op.scale.d[0], op[i].op.scale.d[1], op[i].op.scale.d[2]);
+      matrix_mult(peek(systems), tmp);
+      copy_matrix(tmp, peek(systems));
+      tmp->lastcol = 0;
+      
+      break;
+
+    case ROTATE:
+      printf("rotate axis: %.2f degrees: %.2f", op[i].op.rotate.axis, op[i].op.rotate.degrees);
+      theta = op[i].op.rotate.degrees * (M_PI / 180);
+      if ( op[i].op.rotate.axis == 0 )
+        tmp = make_rotX( theta );
+      else if ( op[i].op.rotate.axis == 1 )
+        tmp = make_rotY( theta );
+      else
+        tmp = make_rotZ( theta );
+      matrix_mult(peek(systems), tmp);
+      copy_matrix(tmp, peek(systems));
+      tmp->lastcol = 0;
+      
+      break;
+
+    case BOX:
+      printf("box d0: %.2f %.2f %.2f d1: %.2f %.2f %.2f", op[i].op.box.d0[0], op[i].op.box.d0[1], op[i].op.box.d0[2], op[i].op.box.d1[0], op[i].op.box.d1[1], op[i].op.box.d1[2]);
+      add_box(tmp, op[i].op.box.d0[0], op[i].op.box.d0[1], op[i].op.box.d0[2], op[i].op.box.d1[0], op[i].op.box.d1[1], op[i].op.box.d1[2]);
+      matrix_mult(peek(systems), tmp);
+      draw_polygons(tmp, t, zb, view, light, ambient, areflect, dreflect, sreflect);
+      tmp->lastcol = 0;
+    
+      break;
+
+    case SPHERE:
+      printf("sphere %.2f %.2f %.2f r: %.2f", op[i].op.sphere.d[0], op[i].op.sphere.d[1], op[i].op.sphere.d[2], op[i].op.sphere.r);
+      add_sphere( tmp, op[i].op.sphere.d[0], op[i].op.sphere.d[1], op[i].op.sphere.d[2], op[i].op.sphere.r, step_3d);
+      matrix_mult(peek(systems), tmp);
+      draw_polygons(tmp, t, zb, view, light, ambient, areflect, dreflect, sreflect);
+      tmp->lastcol = 0;
+    
+      break;
+
+    case TORUS:
+      printf("torus %.2f %.2f %.2f r0: %.2f r1: %.2f", op[i].op.torus.d[0], op[i].op.torus.d[1], op[i].op.torus.d[2], op[i].op.torus.r0, op[i].op.torus.r1);
+      add_torus(tmp, op[i].op.torus.d[0], op[i].op.torus.d[1], op[i].op.torus.d[2], op[i].op.torus.r0, op[i].op.torus.r1, step_3d);
+      matrix_mult(peek(systems), tmp);
+      draw_polygons(tmp, t, zb, view, light, ambient, areflect, dreflect, sreflect);
+      tmp->lastcol = 0;
+    
+      break;
+
+    case LINE:
+      printf("line from: %.2f %.2f %.2f to: %.2f %.2f %.2f", op[i].op.line.p0[0], op[i].op.line.p0[1], op[i].op.line.p0[2], op[i].op.line.p1[0], op[i].op.line.p1[1], op[i].op.line.p1[2]);
+      add_edge(tmp, op[i].op.line.p0[0], op[i].op.line.p0[1], op[i].op.line.p0[2], op[i].op.line.p1[0], op[i].op.line.p1[1], op[i].op.line.p1[2]);
+      matrix_mult(peek(systems), tmp);
+      //draw_lines(edges, s, zb, c);
+      tmp->lastcol = 0;
+    
+      break;
+
+    case SAVE:
+      printf("save: %s", op[i].op.save.p->name);
+      save_extension(t, op[i].op.save.p->name);
+      break;
+
+    case DISPLAY:
+      printf("display");
+      display(t);
+      break;
+    }
+    printf("\n");
+  }
 }
